@@ -1,6 +1,6 @@
 domain: l4wson.github.io       # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
 url: https://l4wson.github.io  # the base hostname and protocol for your site, e.g. http://example.com
 baseurl: C:\Users\skywa\Downloads\GitHub\L4wson.github.io      # place folder name if the site is served in a subfolder
-theme: dark-poole
+theme: tactile
 title: Jacob's homepage
 description: Bookmark this to keep an eye on my project updates!

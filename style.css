@@ -22,9 +22,17 @@ body {
   nav li{
     margin: 0 10px;
   }
+  nav a {
+    text-decoration: none;
+			color: #333333; /* change menu item color */
+			font-weight: bold; /* make menu items bold */
+			font-size: 16px;
+			transition: color 0.2s ease-in-out; /* add a hover effect */
+  }
   nav a:hover {
     color: #58a6ff;
   }
+
   @media (prefers-color-scheme: dark) {
     body {
       color: #c9d1d9;

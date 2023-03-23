@@ -12,6 +12,19 @@ body {
     line-height: 1.2;
   }
   
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+  }
+  nav li{
+    margin: 0 10px;
+  }
+  nav a:hover {
+    color: #58a6ff;
+  }
   @media (prefers-color-scheme: dark) {
     body {
       color: #c9d1d9;

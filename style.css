@@ -41,7 +41,7 @@ body {
   footer ul {
     list-style: none;
   }
-  #Social {
+  p.Social {
     list-style: none;
     margin: 0;
     padding: 0;

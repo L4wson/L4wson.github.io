@@ -41,7 +41,7 @@ body {
   footer ul {
     list-style: none;
   }
-  .Social ul {
+  ul.contact ul {
     list-style: none;
     margin: 0;
     padding: 0;

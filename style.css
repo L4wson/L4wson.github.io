@@ -21,7 +21,7 @@ body {
     display: flex;
     justify-content: space-between;
   }
-  
+
   nav li{
     margin: 0 10px;
   }
@@ -40,6 +40,13 @@ body {
   }
   footer ul {
     list-style: none;
+  }
+  #Social {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
   }
   @media (prefers-color-scheme: dark) {
     body {

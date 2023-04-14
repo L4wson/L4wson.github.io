@@ -35,7 +35,10 @@ body {
     color: #58a6ff;
   }
   hr.solid {
-    border-top: 2px solid #c9d1d9;
+    border-top: 1px solid #c9d1d9;
+  }
+  footer ul {
+    list-style: none;
   }
   @media (prefers-color-scheme: dark) {
     body {

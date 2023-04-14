@@ -21,6 +21,7 @@ body {
     display: flex;
     justify-content: space-between;
   }
+  
   nav li{
     margin: 0 10px;
   }

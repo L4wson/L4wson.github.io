@@ -1,5 +1,17 @@
-# L4wson.github.io
+# jlawson.tech
 
-Personal Portfolio/Website
+Personal site and portfolio for myself.
 
-View my site here at: here at https://L4wson.github.io
+Super simple static github pages site. 
+
+Check it out here: https://jlawson.tech
+
+## Structure
+
+```
+index.html      everything (hero, experience, projects, toolkit, contact)
+style.css       all styles, dark theme
+projects.html   redirect to /#projects (keeps old links alive)
+assets/         favicons, web manifest, Resume.pdf
+CNAME           custom domain
+```

@@ -6,8 +6,10 @@
   --line-2:    #2C3543;
   --text:      #E4E9F0;
   --muted:     #8A94A6;
-  --accent:    #E9A93C;
-  --accent-sf: rgba(233, 169, 60, .12);
+  --accent:    #3D63D8;
+  --accent-sf: rgba(61, 99, 216, .14);
+  --status:    #2ECC71;
+  --status-sf: rgba(46, 204, 113, .12);
 
   --sans:  "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --mono:  "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -93,7 +95,7 @@ a:hover { color: var(--accent); text-decoration-color: var(--accent); }
   font-family: var(--disp);
   font-weight: 100;
   font-stretch: 125%;
-  font-size: clamp(3.25rem, 15vw, 7.5rem);
+  font-size: clamp(2.5rem, 10vw, 5rem);
   line-height: .88;
   letter-spacing: -.035em;
   margin: 0 0 2rem;
@@ -106,7 +108,7 @@ a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 .status {
   display: inline-flex; align-items: center; flex-wrap: wrap; gap: .625rem;
   border: 1px solid var(--line-2);
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid var(--status);
   background: var(--bg-2);
   padding: .625rem .9375rem;
   border-radius: 3px;
@@ -115,14 +117,14 @@ a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 }
 .dot {
   width: .5rem; height: .5rem; border-radius: 50%;
-  background: var(--accent); flex: none;
-  box-shadow: 0 0 0 0 var(--accent);
+  background: var(--status); flex: none;
+  box-shadow: 0 0 0 0 var(--status);
   animation: pulse 2.4s ease-out infinite;
 }
 @keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(14, 179, 52, 0.5); }
-  70%  { box-shadow: 0 0 0 .5rem rgba(233,169,60,0); }
-  100% { box-shadow: 0 0 0 0 rgba(233,169,60,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+  70%  { box-shadow: 0 0 0 .5rem rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
 }
 .status-key { color: var(--muted); letter-spacing: .1em; text-transform: uppercase; font-size: .6875rem; }
 .status-val { color: var(--text); }
@@ -136,7 +138,7 @@ a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 }
 .btn:hover { border-color: var(--accent); background: var(--accent-sf); color: var(--accent); }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #0A0C11; }
-.btn-primary:hover { background: #F2BB5C; border-color: #F2BB5C; color: #0A0C11; }
+.btn-primary:hover { background: #5C82E8; border-color: #5C82E8; color: #0A0C11; }
 
 /* ── Sections ───────────────────────────────────────── */
 section { padding-bottom: var(--gap); }

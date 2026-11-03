@@ -1,0 +1,162 @@
+@font-face {
+  font-family: "Roboto";
+  src: url("assets/fonts/roboto-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("assets/fonts/roboto-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("assets/fonts/roboto-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --grey: #18181a;
+  --text: #f4f4f4;
+  --muted: #9b9b9e;
+  --white: #fff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  background: var(--grey);
+  color: var(--text);
+  font-family: "Roboto", system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+#galaxy {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* The text block floats over the map. Only the text itself takes pointer
+   events, so the map stays draggable right up to its edges. */
+main {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 3rem 1rem;
+  pointer-events: none;
+}
+
+#intro {
+  width: 100%;
+  max-width: 35rem;
+  text-align: center;
+}
+
+#intro h1, #intro p, #intro ul { pointer-events: auto; }
+
+h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.5rem, 10vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+#intro p {
+  margin: 0 auto 1.75rem;
+  text-wrap: balance;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 500;
+}
+
+.links + .links { margin-top: 0.25rem; }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover { color: var(--muted); }
+
+a:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+#hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0.875rem;
+  margin: 0;
+  padding: 0 1rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+#card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: min(19rem, calc(100vw - 2rem));
+  padding: 0.625rem 0.75rem;
+  background: var(--white);
+  color: var(--grey);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+#card[hidden] { display: none; }
+
+#card strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+#card span { display: block; }
+
+#card .action { margin-top: 0.25rem; color: #58585b; }
+
+#card a { pointer-events: auto; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Not enough room for the map to sit around the text (landscape phones). */
+body.cramped #galaxy { opacity: 0.3; touch-action: pan-y; }
+body.cramped #hint { display: none; }

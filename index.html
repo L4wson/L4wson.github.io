@@ -1,15 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jacob Lawson — Software Engineer</title>
-<meta name="description" content="Jacob Lawson — Computer Science &amp; Engineering student at UC Merced. Full-stack projects, systems tinkering, and a small homelab.">
-<meta name="theme-color" content="#0A0C11">
+<title>Jacob Lawson</title>
+<meta name="description" content="Jacob Lawson, Computer Science & Engineering student at UC Merced. Full-stack projects, systems tinkering, and a small homelab.">
+<meta name="theme-color" content="#18181a">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Jacob Lawson — Software Engineer">
+<meta property="og:title" content="Jacob Lawson">
 <meta property="og:description" content="CSE student at UC Merced. Full-stack projects, systems tinkering, and a small homelab.">
 <meta property="og:url" content="https://jlawson.tech/">
 
@@ -18,192 +17,47 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
 <link rel="manifest" href="assets/site.webmanifest">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/roboto-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<a class="skip" href="#main">Skip to content</a>
+<canvas id="galaxy" aria-hidden="true"></canvas>
 
-<nav class="topbar">
-  <div class="wrap topbar-inner">
-    <a class="mark" href="#top">JL</a>
-    <ul>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#toolkit">Toolkit</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </div>
-</nav>
+<main>
+  <div id="intro">
+    <h1>Jacob Lawson</h1>
 
-<main id="main" class="wrap">
-
-  <!-- ── Hero ─────────────────────────────────────────── -->
-  <header id="top" class="hero">
-    <p class="eyebrow reveal" style="--d:0ms">Merced, California</p>
-
-    <h1 class="wordmark reveal" style="--d:60ms">
-      <span>Jacob</span>
-      <span>Lawson</span>
-    </h1>
-
-    <div class="status reveal" style="--d:140ms">
-      <span class="dot" aria-hidden="true"></span>
-      <span class="status-key">Status</span>
-      <span class="status-val">Open to Summer 2027 New Grad Sofware Engineering Jobs.</span>
-    </div>
-
-    <p class="lede reveal" style="--d:200ms">
-      I'm a Computer Science &amp; Engineering student at UC Merced. I build full-stack tools that
-      make messy data useful — scrapers, simulators, dashboards — and I run a small homelab because
-      breaking my own network is a good way to learn how networks work.
+    <p>
+      I'm a Computer Science &amp; Engineering student at UC Merced, graduating in May 2027 and
+      looking for new grad software engineering roles. I build full-stack tools that make messy
+      data useful, and I run a small homelab because breaking my own network is a good way to
+      learn how networks work.
     </p>
 
-    <div class="actions reveal" style="--d:260ms">
-      <a class="btn btn-primary" href="assets/Resume.pdf" target="_blank" rel="noopener">Read my résumé</a>
-      <a class="btn" href="https://github.com/L4wson" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn" href="https://www.linkedin.com/in/lawso/" target="_blank" rel="noopener">LinkedIn</a>
-    </div>
-  </header>
-
-  <!-- ── Experience ───────────────────────────────────── -->
-  <section id="experience">
-    <h2 class="section-head"><span>Experience</span></h2>
-
-    <ol class="timeline">
-      <li>
-        <div class="when">2025</div>
-        <div class="what">
-          <h3>R&amp;D Software Engineering Intern</h3>
-          <p class="org">Robotics Cats</p>
-          <p>Built Python tooling for environmental monitoring: a mapping application for visualizing
-             wildfire risk, and an audio detection pipeline that flags the sound of illegal logging.</p>
-        </div>
-      </li>
-      <li>
-        <div class="when">2023<span class="cont">now</span></div>
-        <div class="what">
-          <h3>Student Technology Consultant</h3>
-          <p class="org">UC Merced — Office of Information Technology</p>
-          <p>Resolve hardware, network, and account problems for faculty, staff, and students, and keep
-             classroom AV and roughly 200 campus printers running.</p>
-        </div>
-      </li>
-      <li>
-        <div class="when">2022</div>
-        <div class="what">
-          <h3>Undergraduate Research Assistant</h3>
-          <p class="org">UC Merced — LInC Lab</p>
-          <p>Automated the cleaning of 600+ CSV transcription files with Python and pandas, and organized
-             study data so researchers could actually find what they needed.</p>
-        </div>
-      </li>
-    </ol>
-
-    <div class="edu">
-      <h3>B.S. Computer Science &amp; Engineering</h3>
-      <p class="org">University of California, Merced · Expected May 2027</p>
-      <p class="courses">Algorithms · Computer Architecture · Data Structures · Database Systems ·
-         Full-Stack Web Development · Discrete Mathematics · Probability &amp; Statistics</p>
-      <p>Active member of the National Society of Black Engineers.</p>
-    </div>
-  </section>
-
-  <!-- ── Projects ─────────────────────────────────────── -->
-  <section id="projects">
-    <h2 class="section-head"><span>Projects</span></h2>
-
-    <div class="grid">
-      <article class="card">
-        <h3><a href="https://github.com/L4wson/OWCS-Muse" target="_blank" rel="noopener">OWCS-Muse</a></h3>
-        <p>Get information about OWCS stats in natural language. Ask any question and it'll give you a data backed answer.</p>
-        <ul class="tags"><li>React</li><li>Vite</li><li>Express</li><li>Node.js</li></ul>
-      </article>
-
-      <article class="card">
-        <h3><a href="https://github.com/L4wson/bobcat-bulletin" target="_blank" rel="noopener">Bobcat Bulletin</a></h3>
-        <p>Turns the UC Merced PD daily crime log into a searchable, filterable feed, so students can see
-           what's happening on campus without digging through PDFs.</p>
-        <ul class="tags"><li>Node.js</li><li>Express</li><li>SQLite</li><li>React</li></ul>
-      </article>
-
-      <article class="card">
-        <h3><a href="https://liftlabs.vercel.app/" target="_blank" rel="noopener">LiftLabs</a></h3>
-        <p>A full-stack discussion forum with JWT authentication and role-based moderation.</p>
-        <ul class="tags"><li>React</li><li>Node.js</li><li>PostgreSQL</li><li>JWT</li></ul>
-      </article>
-
-      <article class="card">
-        <h3><a href="https://github.com/L4wson/Greenview" target="_blank" rel="noopener">Greenview</a></h3>
-        <p>Browser extension that highlights the software a job application is looking for, so you can avoid workday blues.</p>
-        <ul class="tags"><li>JavaScript</li><li>Browser Extension</li></ul>
-      </article>
-    </div>
-
-    <p class="more"><a href="https://github.com/L4wson" target="_blank" rel="noopener">Everything else lives on GitHub →</a></p>
-  </section>
-
-  <!-- ── Toolkit ──────────────────────────────────────── -->
-  <section id="toolkit">
-    <h2 class="section-head"><span>Toolkit</span></h2>
-
-    <dl class="stack">
-      <dt>Languages</dt>
-      <dd>Python · C++ · JavaScript · SQL · HTML/CSS</dd>
-      <dt>Frameworks</dt>
-      <dd>React · Vite · Node.js · Express · Flask · pandas · NumPy</dd>
-      <dt>Tools</dt>
-      <dd>Git · Linux · SQLite · PostgreSQL · AWS · VS Code</dd>
-    </dl>
-
-    <div class="homelab">
-      <h3>Homelab</h3>
-      <p>A Raspberry Pi called <code>lawsonpi</code> runs Pi-hole for network-wide DNS filtering,
-         Homebridge to drag stubborn devices into HomeKit, and Tailscale so I can reach all of it from
-         anywhere. Most of what I know about DNS, I learned by breaking it. Soon to be bigger and better than ever.</p>
-    </div>
-
-    <p class="offclock">Off the clock: weightlifting, competitive Overwatch, nonfiction, and answering to two cats.</p>
-  </section>
-
-  <!-- ── Contact ──────────────────────────────────────── -->
-  <section id="contact">
-    <h2 class="section-head"><span>Contact</span></h2>
-
-    <p class="lede">If you're hiring full time engineers, building something interesting, or just want to argue about
-       self-hosting — my inbox is open.</p>
-
-    <ul class="links">
-      <li>
-        <span class="link-key">Email</span>
-        <a href="mailto:jacobslawson04@gmail.com">jacobslawson04@gmail.com</a>
-      </li>
-      <li>
-        <span class="link-key">GitHub</span>
-        <a href="https://github.com/L4wson" target="_blank" rel="noopener">github.com/L4wson</a>
-      </li>
-      <li>
-        <span class="link-key">LinkedIn</span>
-        <a href="https://www.linkedin.com/in/lawso/" target="_blank" rel="noopener">linkedin.com/in/lawso</a>
-      </li>
-      <li>
-        <span class="link-key">Résumé</span>
-        <a href="assets/Resume.pdf" target="_blank" rel="noopener">Resume.pdf</a>
-      </li>
+    <ul id="projects" class="links" aria-label="Projects">
+      <li><a href="https://owcsmuse.vercel.app">OWCS Muse</a></li>
+      <li><a href="https://github.com/L4wson/bobcat-bulletin">Bobcat Bulletin</a></li>
+      <li><a href="https://liftlabs.vercel.app/">LiftLabs</a></li>
+      <li><a href="https://github.com/L4wson/Greenview">Greenview</a></li>
     </ul>
-  </section>
 
+    <ul class="links" aria-label="Contact">
+      <li><a href="assets/Resume.pdf">Résumé</a></li>
+      <li><a href="https://github.com/L4wson">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/lawso/">LinkedIn</a></li>
+      <li><a href="mailto:jacobslawson04@gmail.com">Email</a></li>
+    </ul>
+  </div>
+
+  <nav id="repo-links" class="visually-hidden" aria-label="All projects in the background map"></nav>
 </main>
 
-<footer class="wrap">
-  <p>© <span id="year">2026</span> Jacob Lawson </p>
-  <p class="troll"><a href="https://youtu.be/dQw4w9WgXcQ">Nothing down here.</a></p>
-</footer>
+<p id="hint">Bright dots are my GitHub repos and faint ones are private. <span id="hint-action">Hover to read, click to open, drag to pull.</span></p>
 
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<div id="card" role="status" hidden></div>
+
+<script src="projects.js"></script>
+<script src="galaxy.js"></script>
 </body>
 </html>
->>>>>>> cae59d051991eb63796d854e63e7060b9696b974

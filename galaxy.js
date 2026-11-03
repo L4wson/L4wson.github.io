@@ -1,6 +1,7 @@
 // A slowly orbiting map of my GitHub projects, drawn behind the page text.
-// Solid white dots are repos, hollow rings are the tags that connect them,
-// and faint specks are private repos. No libraries.
+// Solid white dots are projects, hollow rings are the tags that connect them,
+// and clicking empty space adds a new node. The tiny faint dots drifting behind
+// everything are only atmosphere. No libraries.
 (function () {
   "use strict";
 
@@ -18,20 +19,24 @@
   var STEP = 1000 / 60;
   var ORBIT_SPEED = 0.00045; // radians per step, about one lap in four minutes
   var INTRO_MS = 1500;
-  var HUB_ORDER = ["JavaScript", "Overwatch", "Postgres", "React", "Python", "Robotics Cats"];
+  var DUST_SPACING = 10000; // one drifting dot per this many square pixels
+  var MAX_ADDED = 40; // past this, each new node replaces the oldest one
+  var HUB_ORDER = ["JavaScript", "Postgres", "React", "FastAPI", "Python", "Robotics Cats", "Flask"];
 
   var width = 0;
   var height = 0;
   var dpr = 1;
   var center = { x: 0, y: 0 };
   var ring = { a: 1, b: 1 }; // semi-axes of the orbit
-  var keepOut = { left: 0, right: 0, top: 0, bottom: 0 }; // around the text
-  var narrow = false; // the text spans the screen, so nodes can't circle it
+  var textBox = { left: 0, right: 0, top: 0, bottom: 0 };
+  var narrow = false; // too tight for every label to fit
   var cramped = false;
 
   var nodes = [];
   var links = [];
   var hubs = {};
+  var added = [];
+  var dust = [];
 
   var pointer = { x: -9999, y: -9999, onCanvas: false };
   var hovered = null;
@@ -39,7 +44,6 @@
   var locked = null; // a hub clicked to keep its connections lit
   var dragged = null;
   var press = null;
-  var waves = [];
   var orbitEase = 1;
   var startedAt = 0;
   var running = false;
@@ -81,19 +85,10 @@
       hubs[tag].r = 5 + hubs[tag].neighbors.length * 0.9;
     });
 
-    for (var i = 0; i < (window.PRIVATE_REPOS || 0); i++) {
-      nodes.push(
-        makeNode({
-          kind: "private",
-          r: 1.6 + Math.random() * 1.4,
-          ringAt: 0.8 + Math.random() * 0.5,
-        })
-      );
-    }
   }
 
   // Hubs that share projects sit next to each other, so their lines run along
-  // the orbit rather than across the text. Each repo starts between its hubs,
+  // the orbit rather than straight across it. Each repo starts between its hubs,
   // then a few hundred silent steps let everything settle before the first frame.
   function seed() {
     var named = nodes.filter(function (n) { return n.kind === "hub"; });
@@ -112,23 +107,29 @@
           y += Math.sin(hub.angle);
         });
         node.angle = Math.atan2(y, x) + (Math.random() - 0.5) * 0.5;
-      } else if (node.kind === "private") {
-        node.angle = Math.random() * Math.PI * 2;
       }
 
-      var angle = node.angle;
-      if (narrow) {
-        // Only the bands above and below the text exist, so fold the sides in.
-        var side = Math.cos(angle) >= 0 ? 1 : -1;
-        var up = Math.sin(angle) >= 0 ? 1 : -1;
-        angle = Math.atan2(up * (0.6 + Math.abs(Math.sin(angle))), side * Math.abs(Math.cos(angle)));
-      }
-      node.x = center.x + Math.cos(angle) * ring.a * node.ringAt;
-      node.y = center.y + Math.sin(angle) * ring.b * node.ringAt;
-      node.phase = Math.random() * Math.PI * 2;
+      node.x = center.x + Math.cos(node.angle) * ring.a * node.ringAt;
+      node.y = center.y + Math.sin(node.angle) * ring.b * node.ringAt;
     });
 
     for (var i = 0; i < (reducedMotion ? 1500 : 420); i++) step();
+  }
+
+  function seedDust() {
+    var count = Math.max(60, Math.min(170, Math.round((width * height) / DUST_SPACING)));
+    for (var i = 0; i < count; i++) {
+      dust.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: 0.7 + Math.pow(Math.random(), 2) * 1.8,
+        alpha: 0.14 + Math.random() * 0.38,
+        heading: Math.random() * Math.PI * 2,
+        speed: 0.05 + Math.random() * 0.16,
+        pushX: 0,
+        pushY: 0,
+      });
+    }
   }
 
   // ---- layout ------------------------------------------------------------
@@ -142,63 +143,85 @@
     canvas.height = height * dpr;
 
     var box = intro.getBoundingClientRect();
-    var padX = 56;
-    var padY = 34;
-    narrow = box.width > width - 240;
+    narrow = width < 600;
     cramped = box.height > height - 170;
     document.body.classList.toggle("cramped", cramped);
 
-    keepOut.left = box.left - padX;
-    keepOut.right = box.right + padX;
-    keepOut.top = box.top - padY;
-    keepOut.bottom = box.bottom + padY;
+    textBox.left = box.left;
+    textBox.right = box.right;
+    textBox.top = box.top;
+    textBox.bottom = box.bottom;
 
     center.x = width / 2;
     center.y = (box.top + box.bottom) / 2;
-    if (narrow) {
-      ring.a = width / 2 - 34;
-      ring.b = box.height / 2 + (height - box.height) / 4;
-    } else {
-      ring.a = width * 0.43;
-      ring.b = height * 0.4;
-    }
+    ring.a = width * 0.43;
+    ring.b = height * 0.4;
 
     if (previous.w) {
       nodes.forEach(function (n) {
         n.x *= width / previous.w;
         n.y *= height / previous.h;
       });
+      dust.forEach(function (d) {
+        d.x *= width / previous.w;
+        d.y *= height / previous.h;
+      });
     }
   }
 
   // ---- physics -----------------------------------------------------------
 
+  // Each dot wanders on a slowly turning heading, leans away from the pointer,
+  // and wraps around at the edges of the screen.
+  function floatDust() {
+    if (reducedMotion) return;
+    dust.forEach(function (d) {
+      d.heading += (Math.random() - 0.5) * 0.04;
+
+      if (pointer.onCanvas) {
+        var dx = d.x - pointer.x;
+        var dy = d.y - pointer.y;
+        var dist2 = dx * dx + dy * dy;
+        if (dist2 < 8100 && dist2 > 1) {
+          var dist = Math.sqrt(dist2);
+          d.pushX += (dx / dist) * (1 - dist / 90) * 0.2;
+          d.pushY += (dy / dist) * (1 - dist / 90) * 0.2;
+        }
+      }
+      d.pushX *= 0.92;
+      d.pushY *= 0.92;
+
+      d.x = (d.x + Math.cos(d.heading) * d.speed + d.pushX + width) % width;
+      d.y = (d.y + Math.sin(d.heading) * d.speed + d.pushY + height) % height;
+    });
+  }
+
   function step() {
+    floatDust();
+
     var settling = hovered || focused || dragged ? 0 : 1;
     orbitEase += (settling - orbitEase) * 0.06;
-    if (reducedMotion || narrow) orbitEase = 0;
+    if (reducedMotion) orbitEase = 0;
 
     var i, j, a, b, dx, dy, d2, d, force;
 
     // Repos and hubs push each other apart, harder sideways so labels fit.
     for (i = 0; i < nodes.length; i++) {
       a = nodes[i];
-      if (a.kind === "private") continue;
       for (j = i + 1; j < nodes.length; j++) {
         b = nodes[j];
-        if (b.kind === "private") continue;
         dx = a.x - b.x;
         dy = a.y - b.y;
         d2 = dx * dx + dy * dy || 1;
         if (d2 > 90000) continue;
         d = Math.sqrt(d2);
-        force = 1100 / d2;
+        force = 2600 / d2;
         a.vx += (dx / d) * force;
         a.vy += (dy / d) * force;
         b.vx -= (dx / d) * force;
         b.vy -= (dy / d) * force;
 
-        if (!narrow && Math.abs(dx) < 118 && Math.abs(dy) < 40) {
+        if (!narrow && a.label && b.label && Math.abs(dx) < 118 && Math.abs(dy) < 40) {
           var nudge = (dx >= 0 ? 1 : -1) * 0.1;
           a.vx += nudge;
           b.vx -= nudge;
@@ -207,7 +230,7 @@
     }
 
     // Links pull connected nodes together.
-    var rest = narrow ? 64 : Math.min(width, height) * 0.15;
+    var rest = Math.min(width, height) * (narrow ? 0.2 : 0.27);
     var floor = cramped ? 8 : hintLine.offsetHeight + 34;
     links.forEach(function (link) {
       dx = link.b.x - link.a.x;
@@ -228,55 +251,30 @@
       var rho = Math.sqrt(u * u + v * v) || 0.001;
 
       // Hold each node near its own orbit.
-      if (!narrow) {
-        var pull = (node.ringAt - rho) * 0.022;
-        node.vx += (u / rho) * pull * ring.a * 0.25;
-        node.vy += (v / rho) * pull * ring.a * 0.25;
-      }
+      var pull = (node.ringAt - rho) * 0.0055 * ring.a;
+      node.vx += (u / rho) * pull;
+      node.vy += (v / rho) * pull;
 
-      // Circle the text. Specks further in move faster, like a real disc.
-      var spin = ORBIT_SPEED * orbitEase * (node.kind === "private" ? 2.4 / node.ringAt : 1);
+      // Circle the center of the page.
+      var spin = ORBIT_SPEED * orbitEase;
       node.x += -v * ring.a * spin * 1.6;
       node.y += u * ring.b * spin * 1.6;
 
-      // On small screens nothing circles, so everything sways a little instead.
-      if (narrow && !reducedMotion) {
-        node.phase += 0.006;
-        node.x += Math.sin(node.phase) * 0.12;
-        node.y += Math.cos(node.phase * 0.7) * 0.06;
-      }
-
-      if (!cramped) pushOutOfText(node);
-
       // Soft walls.
-      var margin = node.kind === "private" ? -10 : 26;
+      var margin = 26;
       if (node.x < margin) node.vx += 0.14;
       if (node.x > width - margin) node.vx -= 0.14;
       if (node.y < margin) node.vy += 0.14;
       if (node.y > height - margin - 18) node.vy -= 0.14;
-
-      // Specks shy away from the pointer.
-      if (node.kind === "private" && pointer.onCanvas) {
-        dx = node.x - pointer.x;
-        dy = node.y - pointer.y;
-        d2 = dx * dx + dy * dy;
-        if (d2 < 8100 && d2 > 1) {
-          d = Math.sqrt(d2);
-          node.vx += (dx / d) * (1 - d / 90) * 0.35;
-          node.vy += (dy / d) * (1 - d / 90) * 0.35;
-        }
-      }
 
       node.vx *= 0.86;
       node.vy *= 0.86;
       node.x += node.vx;
       node.y += node.vy;
 
-      // Named dots never leave the screen or sit on the hint line.
-      if (node.kind !== "private") {
-        node.x = Math.max(node.r + 8, Math.min(width - node.r - 8, node.x));
-        node.y = Math.max(node.r + 8, Math.min(height - node.r - floor, node.y));
-      }
+      // Dots never leave the screen or sit on the hint line.
+      node.x = Math.max(node.r + 8, Math.min(width - node.r - 8, node.x));
+      node.y = Math.max(node.r + 8, Math.min(height - node.r - floor, node.y));
     });
 
     if (dragged) {
@@ -285,38 +283,16 @@
       dragged.vx = dragged.vy = 0;
     }
 
-    waves = waves.filter(function (wave) {
-      wave.radius += 9;
-      wave.life -= 0.03;
-      nodes.forEach(function (node) {
-        dx = node.x - wave.x;
-        dy = node.y - wave.y;
-        d = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (Math.abs(d - wave.radius) < 16) {
-          var kick = (node.kind === "private" ? 2.6 : 1.3) * wave.life;
-          node.vx += (dx / d) * kick;
-          node.vy += (dy / d) * kick;
-        }
-      });
-      return wave.life > 0;
-    });
   }
 
-  function pushOutOfText(node) {
-    var pad = node.r + 2;
-    var left = node.x - (keepOut.left - pad);
-    var right = keepOut.right + pad - node.x;
-    var top = node.y - (keepOut.top - pad);
-    var bottom = keepOut.bottom + pad - node.y;
-    if (left <= 0 || right <= 0 || top <= 0 || bottom <= 0) return;
-
-    // The text spans a small screen, so sideways is never the way out.
-    var nearest = narrow ? Math.min(top, bottom) : Math.min(left, right, top, bottom);
-    var push = Math.min(nearest * 0.12, 2.4);
-    if (nearest === top) node.vy -= push;
-    else if (nearest === bottom) node.vy += push;
-    else if (nearest === left) node.vx -= push;
-    else node.vx += push;
+  // Dots dim as they slide behind the text so the words stay readable.
+  // Returns 1 clear of the text, down to 0.3 fully behind it.
+  function behindText(node) {
+    var reach = 26;
+    var dx = Math.max(textBox.left - node.x, node.x - textBox.right, 0);
+    var dy = Math.max(textBox.top - node.y, node.y - textBox.bottom, 0);
+    var d = Math.sqrt(dx * dx + dy * dy);
+    return d >= reach ? 1 : 0.3 + (0.7 * d) / reach;
   }
 
   // ---- drawing -----------------------------------------------------------
@@ -339,13 +315,17 @@
     var spread = 0.4 + 0.6 * (1 - Math.pow(1 - t, 3));
     var active = activeNode();
 
-    function zoom() {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.translate(center.x, center.y);
-      ctx.scale(spread, spread);
-      ctx.translate(-center.x, -center.y);
-    }
-    zoom();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dust.forEach(function (d) {
+      ctx.fillStyle = "rgba(" + WHITE + "," + d.alpha * behindText(d) * fadeIn + ")";
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.translate(center.x, center.y);
+    ctx.scale(spread, spread);
+    ctx.translate(-center.x, -center.y);
 
     links.forEach(function (link) {
       var touches = active && (link.a === active || link.b === active);
@@ -357,31 +337,16 @@
       ctx.stroke();
     });
 
-    // Lines fade out behind the text so they never run through a sentence.
-    if (!cramped) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = "#000";
-      ctx.shadowColor = "#000";
-      ctx.shadowBlur = 26 * dpr;
-      ctx.fillRect(keepOut.left + 22, keepOut.top + 16, keepOut.right - keepOut.left - 44, keepOut.bottom - keepOut.top - 32);
-      ctx.shadowBlur = 0;
-      ctx.globalCompositeOperation = "source-over";
-      zoom();
-    }
-
     nodes.forEach(function (node) {
       var lit = isLit(node, active);
       var target = node === active ? 1 : 0;
       node.glow += (target - node.glow) * (reducedMotion ? 1 : 0.2);
 
+      ctx.globalAlpha = behindText(node);
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.r + node.glow * 3, 0, Math.PI * 2);
 
-      if (node.kind === "private") {
-        ctx.fillStyle = "rgba(" + WHITE + "," + (node === active ? 1 : active ? 0.14 : 0.38) * fadeIn + ")";
-        ctx.fill();
-      } else if (node.kind === "hub") {
+      if (node.kind === "hub") {
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = "rgba(" + WHITE + "," + (lit ? 0.9 : 0.16) * fadeIn + ")";
         ctx.fillStyle = node === active ? "rgb(" + WHITE + ")" : "rgba(0,0,0,0)";
@@ -400,6 +365,8 @@
       }
     });
 
+    ctx.globalAlpha = 1;
+
     // Labels go last so lines never run through them.
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -410,17 +377,11 @@
       var size = node.kind === "repo" ? 12.5 : 11.5;
       ctx.font = (node.kind === "repo" ? "500 " : "400 ") + size + 'px Roboto, system-ui, sans-serif';
       ctx.fillStyle = "rgba(" + WHITE + "," + (isLit(node, active) ? 0.92 : 0.2) * fadeIn + ")";
+      ctx.globalAlpha = (behindText(node) - 0.3) / 0.7; // labels vanish behind text
       ctx.fillText(node.label, node.x, node.y + node.r + 5);
     });
+    ctx.globalAlpha = 1;
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    waves.forEach(function (wave) {
-      ctx.strokeStyle = "rgba(" + WHITE + "," + wave.life * 0.5 + ")";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
-      ctx.stroke();
-    });
   }
 
   // ---- the hover card ----------------------------------------------------
@@ -437,12 +398,12 @@
     var title = document.createElement("strong");
     var body = document.createElement("span");
 
-    if (node.kind === "private") {
-      title.textContent = "Private repo";
-      body.textContent = "Class work, experiments, and projects still in progress.";
+    if (node.kind === "added") {
+      title.textContent = "Your node";
+      body.textContent = "You added this one. It goes away when you leave the page.";
     } else if (node.kind === "hub") {
       title.textContent = node.label;
-      body.textContent = node.neighbors.map(function (n) { return n.label; }).join(", ");
+      body.textContent = node.neighbors.map(function (n) { return n.label; }).filter(Boolean).join(", ");
     } else {
       title.textContent = node.label;
       body.textContent = node.about;
@@ -450,7 +411,7 @@
     card.appendChild(title);
     card.appendChild(body);
 
-    if (node.kind === "repo") {
+    if (node.url) {
       var verb = node.live ? "Open site" : "View on GitHub";
       var action = document.createElement(withLink ? "a" : "span");
       action.className = "action";
@@ -484,7 +445,7 @@
     var best = null;
     var bestDistance = Infinity;
     nodes.forEach(function (node) {
-      var reach = node.r + (touch ? 16 : node.kind === "private" ? 5 : 8);
+      var reach = node.r + (touch ? 16 : 8);
       var d = Math.hypot(node.x - x, node.y - y);
       if (d < reach && d < bestDistance) {
         best = node;
@@ -546,15 +507,16 @@
     var node = click.node;
     if (click.touch) {
       // First tap explains a dot. The card holds the link.
+      var dismissing = !node && focused;
       focused = node === focused ? null : node;
       setCard(focused, true);
-      if (!node) ripple(e.clientX, e.clientY);
+      if (!node && !dismissing) addNode(e.clientX, e.clientY);
       return;
     }
 
     if (!node) {
       locked = null;
-      ripple(e.clientX, e.clientY);
+      addNode(e.clientX, e.clientY);
     } else if (node.url) {
       window.open(node.url, "_blank", "noopener");
     } else if (node.kind === "hub") {
@@ -576,9 +538,52 @@
     }
   });
 
-  function ripple(x, y) {
-    if (reducedMotion) return;
-    waves.push({ x: x, y: y, radius: 0, life: 1 });
+  // A click on empty space adds a node, wired to whatever is closest, and it
+  // joins the orbit from where it landed.
+  function addNode(x, y) {
+    if (added.length >= MAX_ADDED) removeNode(added.shift());
+
+    var nearest = null;
+    var nearestDistance = Infinity;
+    nodes.forEach(function (node) {
+      var d = Math.hypot(node.x - x, node.y - y);
+      if (d < nearestDistance) {
+        nearest = node;
+        nearestDistance = d;
+      }
+    });
+
+    var u = (x - center.x) / ring.a;
+    var v = (y - center.y) / ring.b;
+    var node = makeNode({
+      kind: "added",
+      x: x,
+      y: y,
+      r: 3.5,
+      ringAt: Math.max(0.35, Math.min(1.2, Math.sqrt(u * u + v * v))),
+      glow: 1, // starts swollen and shrinks to size
+    });
+
+    nodes.push(node);
+    added.push(node);
+    links.push({ a: node, b: nearest });
+    node.neighbors.push(nearest);
+    nearest.neighbors.push(node);
+
+    settleUntil = performance.now() + 800;
+    wake();
+  }
+
+  function removeNode(node) {
+    nodes.splice(nodes.indexOf(node), 1);
+    links = links.filter(function (link) {
+      return link.a !== node && link.b !== node;
+    });
+    node.neighbors.forEach(function (other) {
+      other.neighbors.splice(other.neighbors.indexOf(node), 1);
+    });
+    if (hovered === node) hovered = null;
+    if (focused === node) focused = null;
   }
 
   // ---- keyboard access: every repo is also a real link -------------------
@@ -586,7 +591,7 @@
   function buildRepoLinks() {
     var nav = document.getElementById("repo-links");
     nodes.forEach(function (node) {
-      if (node.kind !== "repo") return;
+      if (!node.url) return;
       var link = document.createElement("a");
       link.href = node.url;
       link.textContent = node.label + ": " + node.about;
@@ -647,10 +652,10 @@
   function start() {
     build();
     measure();
-    measure(); // the second pass uses the narrow flag from the first
+    seedDust();
     seed();
 
-    if (coarsePointer) hint.textContent = "Tap one to read about it, or drag it around.";
+    if (coarsePointer) hint.textContent = "Tap a dot to read about it, or tap anywhere else to add a node.";
 
     buildRepoLinks();
     startedAt = performance.now();

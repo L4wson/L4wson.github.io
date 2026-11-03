@@ -46,8 +46,8 @@ body {
   touch-action: none;
 }
 
-/* The text block floats over the map. Only the text itself takes pointer
-   events, so the map stays draggable right up to its edges. */
+/* The text sits on top of the map with no background of its own. Only the
+   text itself takes pointer events, so the map stays clickable around it. */
 main {
   position: relative;
   min-height: 100vh;
@@ -157,6 +157,6 @@ a:focus-visible {
   white-space: nowrap;
 }
 
-/* Not enough room for the map to sit around the text (landscape phones). */
-body.cramped #galaxy { opacity: 0.3; touch-action: pan-y; }
+/* The text fills the screen on landscape phones, so the page may scroll. */
+body.cramped #galaxy { touch-action: pan-y; }
 body.cramped #hint { display: none; }

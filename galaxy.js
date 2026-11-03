@@ -19,7 +19,7 @@
   var STEP = 1000 / 60;
   var ORBIT_SPEED = 0.00045; // radians per step, about one lap in four minutes
   var INTRO_MS = 1500;
-  var DUST_SPACING = 10000; // one drifting dot per this many square pixels
+  var DUST_SPACING = 100000000; // one drifting dot per this many square pixels
   var MAX_ADDED = 40; // past this, each new node replaces the oldest one
   var HUB_ORDER = ["JavaScript", "Postgres", "React", "FastAPI", "Python", "Robotics Cats", "Flask"];
 
